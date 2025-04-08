@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <div class="columns">
+        <div class="column is-three-quarters">
+            <h1 class="title is-2">My Tasks</h1>
+            <h2 class="subtitle is-4">Welcome, {{ request.user.username }}</h2>
+        </div>
+        {% if user.is_superadmin or user.is_admin %}
+        <div class="column">
+            <a href="{% url 'task-add' %}" class="button is-primary is-pulled-right">
+                <span class="icon">
+                    <i class="fas fa-plus"></i>
+                </span>
+                <span>Add New Task</span>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="table-container">
+        <table class="table is-fullwidth is-striped is-hoverable">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Assigned To</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr>
+                    <td>{{ task.title }}</td>
+                    <td>{{ task.assigned_to }}</td>
+                    <td>{{ task.due_date }}</td>
+                    <td>
+                        <span
+                            class="tag {% if task.status == 'COMPLETED' %}is-success{% elif task.status == 'IN_PROGRESS' %}is-warning{% else %}is-light{% endif %}">
+                            {{ task.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        #{{ task.id }}
+
+                        {% if task.status|lower == 'completed' %}
+                        {% if user.is_superadmin or user.is_admin %}
+                        <a href="{% url 'task-report-web' task.id %}" class="button is-small is-info ml-2">View
+                            Report</a>
+                        {% endif %}
+
+                        {% else %}
+                        {% if task.assigned_to == request.user %}
+                        <a href="{% url 'task-complete-web' task.id %}"
+                            class="button is-small is-success ml-2">Complete</a>
+                        {% elif user.is_superadmin or user.is_admin %}
+                        <span class="tag is-danger ml-2">Not Completed</span>
+                        {% endif %}
+                        {% endif %}
+                    </td>
+
+
+
+
+
+
+                    <td>
+                        {% if user.is_superadmin or user.is_admin %}
+                        <div class="buttons are-small">
+                            <a href="{% url 'task-edit' task.id %}" class="button is-info">
+                                <span class="icon">
+                                    <i class="fas fa-edit"></i>
+                                </span>
+                            </a>
+
+                            <button class="button is-danger is-small delete-task" data-task-id="{{ task.id }}"
+                                data-task-title="{{ task.title }}">
+                                <span class="icon">
+                                    <i class="fas fa-trash"></i>
+                                </span>
+                            </button>
+                        </div>
+                        {% endif %}
+                    </td>
+
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5">No tasks found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal" id="delete-modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Confirm Deletion</p>
+            <button class="delete" aria-label="close" onclick="closeModal()"></button>
+        </header>
+        <section class="modal-card-body">
+            <p>Are you sure you want to delete task: <strong id="task-to-delete"></strong>?</p>
+            <p class="has-text-danger">This action cannot be undone.</p>
+        </section>
+        <footer class="modal-card-foot">
+            <button class="button is-danger" id="confirm-delete">Delete</button>
+            <button class="button" onclick="closeModal()">Cancel</button>
+        </footer>
+    </div>
+</div>
+<div id="toast-container" style="position: fixed; bottom: 1rem; right: 1rem; z-index: 9999;"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    let selectedTaskId = null;
+
+    document.querySelectorAll('.delete-task').forEach(button => {
+        button.addEventListener('click', function () {
+            selectedTaskId = this.getAttribute('data-task-id');
+            const taskTitle = this.getAttribute('data-task-title') || 'this task';
+
+            document.getElementById('task-to-delete').textContent = taskTitle;
+            document.getElementById('confirm-delete').textContent = `Delete #${selectedTaskId}`;
+            document.getElementById('delete-modal').classList.add('is-active');
+        });
+    });
+
+    document.getElementById('confirm-delete').addEventListener('click', function () {
+        if (!selectedTaskId) {
+            showToast(`Task "${data.task_id}" is missing.`, 'is-success');
+            return;
+        }
+
+        deleteTask(selectedTaskId);
+    });
+
+    // Delete function
+    function deleteTask(taskId) {
+        fetch(`/tasks/${taskId}/delete/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': getCSRFToken(),
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include', // Ensures cookies (for CSRF) are sent
+        })
+            .then(async (response) => {
+                const data = await response.json();
+                if (!response.ok) {
+                    console.error("❌ Server error:", data);
+                    showToast(`Error: ${data.message || 'Delete failed.'}`, 'is-danger');
+                } else {
+                    showToast(`Task "${data.task_id}" deleted successfully.`, 'is-success');
+                    document.getElementById(`task-row-${taskId}`)?.remove();
+                    closeModal();
+                }
+            })
+            .catch(error => {
+                showToast(`Error: ${data.message || 'Delete failed.'}`, 'is-danger');
+            });
+    }
+
+    function closeModal() {
+        document.getElementById('delete-modal').classList.remove('is-active');
+        selectedTaskId = null;
+    }
+
+    function getCSRFToken() {
+        const match = document.cookie.match(/csrftoken=([^;]+)/);
+        return match ? match[1] : '';
+    }
+
+    function showToast(message, type = 'is-success', duration = 3000, reloadAfter = false) {
+        const toast = document.createElement('div');
+        toast.className = `notification ${type}`;
+        toast.style.minWidth = '200px';
+        toast.style.marginTop = '0.5rem';
+        toast.innerHTML = `
+        <button class="delete"></button>
+        ${message}
+    `;
+
+        document.getElementById('toast-container').appendChild(toast);
+
+        toast.querySelector('.delete').addEventListener('click', () => toast.remove());
+
+        setTimeout(() => {
+            toast.remove();
+            location.reload();
+        }, duration);
+    }
+
+
+
+    document.querySelectorAll('.modal-close, .modal-background, #cancel-delete').forEach(el => {
+        el.addEventListener('click', closeModal);
+    });
+</script>
+
+
+
+{% endblock %}

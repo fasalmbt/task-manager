@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="columns is-centered">
+        <div class="column is-half">
+            <div class="box">
+                <h1 class="title has-text-centered">
+                    {% if object %}Edit{% else %}Create{% endif %} User
+                </h1>
+
+                <form method="post">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="field">
+                        <label class="label">{{ field.label }}</label>
+                        <div class="control">
+                            {% if field.field.widget.attrs.class == 'select' %}
+                            <div class="select is-fullwidth">
+                                {{ field }}
+                            </div>
+                            {% else %}
+                            {{ field }}
+                            {% endif %}
+                        </div>
+                        {% if field.errors %}
+                        <p class="help is-danger">{{ field.errors|striptags }}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+
+                    <div class="field is-grouped is-justify-content-center">
+                        <div class="control">
+                            <button type="submit" class="button is-primary">
+                                {% if object %}Update{% else %}Create{% endif %} User
+                            </button>
+                        </div>
+                        <div class="control">
+                            <a href="{% url 'user-list' %}" class="button is-light">
+                                Cancel
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="columns">
+        <div class="column is-three-quarters">
+            <h1 class="title is-2">User Management</h1>
+            <h2 class="subtitle is-4">SuperAdmin Panel</h2>
+        </div>
+        <div class="column">
+            <a href="{% url 'user-create' %}" class="button is-primary is-pulled-right">
+                <span class="icon">
+                    <i class="fas fa-plus"></i>
+                </span>
+                <span>Add New User</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="table is-fullwidth is-striped is-hoverable">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in object_list %}
+                <tr>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>
+                        <span
+                            class="tag {% if user.is_superadmin %}is-danger{% elif user.is_admin %}is-warning{% else %}is-info{% endif %}">
+                            {{ user.get_role_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="buttons are-small">
+                            <a href="{% url 'user-edit' user.id %}" class="button is-info">
+                                <span class="icon">
+                                    <i class="fas fa-edit"></i>
+                                </span>
+                            </a>
+                            <a href="{% url 'user-detail' user.pk %}" class="button is-danger">
+                                <span class="icon">
+                                    <i class="fas fa-trash"></i>
+                                </span>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4">No users found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

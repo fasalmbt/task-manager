@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+    <style>
+        .toast-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            min-width: 300px;
+            z-index: 1000;
+            animation: slideIn 0.5s forwards, fadeOut 0.5s forwards 4s;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    {% if request.resolver_match.view_name != 'login' %}
+
+    <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item" href="{% url 'task-list-web' %}">
+                <strong>Task Manager</strong>
+            </a>
+        </div>
+
+        <div class="navbar-menu">
+            <div class="navbar-start">
+                <a class="navbar-item" href="{% url 'task-list-web' %}">
+                    Tasks
+                </a>
+                {% if user.is_superadmin or user.is_admin %}
+                <a class="navbar-item" href="{% url 'task-add' %}">
+                    Add Task
+                </a>
+                {% endif %}
+
+                {% if user.is_superadmin %}
+                <div class="navbar-item has-dropdown is-hoverable">
+                    <a class="navbar-link">
+                        User Management
+                    </a>
+                    <div class="navbar-dropdown">
+                        <a class="navbar-item" href="{% url 'user-create' %}">
+                            Create User
+                        </a>
+                        <a class="navbar-item" href="{% url 'user-list' %}">
+                            User List
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="navbar-end">
+                <div class="navbar-item">
+                    <div class="buttons">
+                        {% if user.is_authenticated %}
+                        <a class="button is-light" href="{% url 'logout' %}">
+                            Log out
+                        </a>
+                        {% else %}
+                        <a class="button is-primary" href="{% url 'login' %}">
+                            Log in
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+
+    <section class="section">
+        <div class="container">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </section>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container">
+        {% for message in messages %}
+        <div class="toast-notification notification is-{{ message.tags }}">
+            <button class="delete" onclick="this.parentElement.remove()"></button>
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const notifications = document.querySelectorAll('.toast-notification');
+
+            notifications.forEach(notification => {
+                setTimeout(() => {
+                    notification.remove();
+                }, 4500);
+
+                notification.querySelector('.delete')?.addEventListener('click', () => {
+                    notification.remove();
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

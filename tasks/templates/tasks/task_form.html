@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="columns is-centered">
+        <div class="column is-half">
+            <h1 class="title is-3">
+                {% if form.instance.pk %}Edit{% else %}Add New{% endif %} Task
+            </h1>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="field">
+                    <label class="label">{{ form.title.label }}</label>
+                    <div class="control">
+                        {{ form.title }}
+                    </div>
+                    {% if form.title.errors %}
+                    <p class="help is-danger">{{ form.title.errors }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="field">
+                    <label class="label">{{ form.description.label }}</label>
+                    <div class="control">
+                        {{ form.description }}
+                    </div>
+                    {% if form.description.errors %}
+                    <p class="help is-danger">{{ form.description.errors }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="field">
+                    <label class="label">{{ form.assigned_to.label }}</label>
+                    <div class="control">
+                        <div class="select is-fullwidth">
+                            {{ form.assigned_to }}
+                        </div>
+                    </div>
+                    {% if form.assigned_to.errors %}
+                    <p class="help is-danger">{{ form.assigned_to.errors }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="field">
+                    <label class="label">{{ form.due_date.label }}</label>
+                    <div class="control">
+                        {{ form.due_date }}
+                    </div>
+                    {% if form.due_date.errors %}
+                    <p class="help is-danger">{{ form.due_date.errors }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="field">
+                    <label class="label">{{ form.status.label }}</label>
+                    <div class="control">
+                        <div class="select is-fullwidth">
+                            {{ form.status }}
+                        </div>
+                    </div>
+                    {% if form.status.errors %}
+                    <p class="help is-danger">{{ form.status.errors }}</p>
+                    {% endif %}
+                </div>
+
+                {% if form.instance.pk and form.instance.status == 'COMPLETED' %}
+                <div class="field">
+                    <label class="label">{{ form.completion_report.label }}</label>
+                    <div class="control">
+                        {{ form.completion_report }}
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">{{ form.worked_hours.label }}</label>
+                    <div class="control">
+                        {{ form.worked_hours }}
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="field is-grouped">
+                    <div class="control">
+                        <button type="submit" class="button is-primary">
+                            {% if form.instance.pk %}Update{% else %}Create{% endif %} Task
+                        </button>
+                    </div>
+                    <div class="control">
+                        <a href="{% url 'task-list-web' %}" class="button is-light">Cancel</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

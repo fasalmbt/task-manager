@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <div class="columns is-centered">
+            <div class="column is-6-tablet is-5-desktop is-4-widescreen">
+                <div class="box">
+
+                    <h1 class="title has-text-centered mb-5">Edit User</h1>
+
+                    <form method="post">
+                        {% csrf_token %}
+
+                        {% for field in form %}
+                        {% if field.name != 'password' %}
+                        <div class="field">
+                            <label class="label">{{ field.label }}</label>
+                            <div class="control">
+                                {{ field }}
+                            </div>
+                            {% if field.help_text %}
+                            <p class="help is-info">{{ field.help_text }}</p>
+                            {% endif %}
+                            {% if field.errors %}
+                            <p class="help is-danger">{{ field.errors }}</p>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+
+                        {# New Password Field #}
+                        <div class="field">
+                            <label class="label">New Password</label>
+                            <div class="control">
+                                {{ form.new_password }}
+                            </div>
+                            {% if form.new_password.help_text %}
+                            <p class="help is-info">{{ form.new_password.help_text }}</p>
+                            {% endif %}
+                            {% if form.new_password.errors %}
+                            <p class="help is-danger">{{ form.new_password.errors }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="field is-grouped is-grouped-right mt-4">
+                            <p class="control">
+                                <button type="submit" class="button is-primary">Save</button>
+                            </p>
+                            <p class="control">
+                                <a href="{% url 'user-list' %}" class="button is-light">Cancel</a>
+                            </p>
+                            <p class="control">
+                                <button type="submit" name="delete" class="button is-danger is-light"
+                                    onclick="return confirm('Are you sure you want to delete this user?');">
+                                    Delete
+                                </button>
+                            </p>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

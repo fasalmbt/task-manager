@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="section">
+    <div class="container">
+        <h1 class="title">Task Report</h1>
+
+        <div class="box">
+            <p><strong>Title:</strong> {{ object.title }}</p>
+            <p><strong>Description:</strong> {{ object.description }}</p>
+            <p><strong>Assigned To:</strong> {{ object.assigned_to }}</p>
+            <p><strong>Status:</strong> {{ object.get_status_display }}</p>
+            <p><strong>Completion Report:</strong></p>
+            <div class="content">
+                <p>{{ object.completion_report }}</p>
+            </div>
+            <p><strong>Worked Hours:</strong> {{ object.worked_hours }}</p>
+            <p><strong>Completed At:</strong> {{ object.updated_at }}</p>
+        </div>
+
+        <a class="button is-light" href="{% url 'task-list-web' %}">Back to Dashboard</a>
+    </div>
+</section>
+{% endblock %}

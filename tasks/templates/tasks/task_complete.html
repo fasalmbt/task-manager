@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="section">
+    <div class="container">
+        <div class="box">
+            <h1 class="title has-text-centered has-text-primary">Complete Task</h1>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <!-- Completion Report -->
+                <div class="field">
+                    <label class="label">Completion Report</label>
+                    <div class="control">
+                        <textarea name="{{ form.completion_report.name }}" class="textarea"
+                            required>{{ form.completion_report.value }}</textarea>
+                    </div>
+                    {% if form.completion_report.errors %}
+                    <p class="help is-danger">{{ form.completion_report.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Worked Hours -->
+                <div class="field">
+                    <label class="label">Worked Hours</label>
+                    <div class="control">
+                        <input type="number" name="{{ form.worked_hours.name }}" value="{{ form.worked_hours.value }}"
+                            class="input" required>
+                    </div>
+                    {% if form.worked_hours.errors %}
+                    <p class="help is-danger">{{ form.worked_hours.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Status -->
+                <div class="field">
+                    <label class="label">Status</label>
+                    <div class="control">
+                        {{ form.status }}
+                    </div>
+                    {% if form.status.errors %}
+                    <p class="help is-danger">{{ form.status.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Submit -->
+                <div class="field is-grouped is-grouped-right mt-4">
+                    <div class="control">
+                        <button class="button is-success is-medium" type="submit">Mark as Completed</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}
